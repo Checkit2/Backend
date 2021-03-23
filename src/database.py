@@ -1,4 +1,5 @@
 import mysql.connector
+import redis
 
 class database:
     def createTables(self):
@@ -8,18 +9,20 @@ class database:
         for table in tables:
             cursor = self.db.cursor()
             cursor.execute(table)
+        if self.redis.set('tables', 'yes'):
+            return True
         return False
 
-    def getChecks(userid):
+    def getChecks(self, userid):
         return ''
 
-    def getUser(userid):
+    def getUser(self, userid):
         return ''
 
-    def addUser(userid):
+    def addUser(self, userid):
         return ''
 
-    def isUserExists(userid):
+    def isUserExists(self, userid):
         # q = "SELECT * FROM `akp_users` "
         return False
     
@@ -28,6 +31,7 @@ class database:
         self.username = username
         self.password = password
         self.dbname = dbname
+        self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.db = mysql.connector.connect(
             host = self.host,
             user = self.username,
@@ -35,4 +39,5 @@ class database:
             database = self.dbname,
         )
         # Creating databases if not exists
-        self.createTables()
+        if self.redis.get('tables') == None: # If anything in sql queries changes redis should be restart
+            self.createTables()

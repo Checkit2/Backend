@@ -29,3 +29,15 @@ def me_api():
         "theme": "",
         "image": "",
     }
+
+@app.route("/status")
+def status():
+    return {
+        'status' : 'awake',
+        'checkit_backend_version' : '0.1',
+        'checkit_builder_version' : '0.1',
+        'mysql_version' : '8.0.23',
+        'redis_version' : '6.2.1',
+        'python_version' : '3.8.5',
+        'flask_version' : '1.1.2'
+    }
