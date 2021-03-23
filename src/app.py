@@ -2,6 +2,7 @@ from flask import Flask, escape, request
 from database import database
 
 app = Flask(__name__)
+kara = database('localhost','akp','somepass', 'akp')
 
 @app.route('/')
 def hello():
@@ -14,6 +15,8 @@ def showResult():
 
 @app.route('/register')
 def registerUser():
+    if kara.isUserExists('09226742397'):
+        return f'exists'
     return f'Added'
 
 @app.route('/checks/<userid>')
@@ -23,7 +26,6 @@ def getUsersChecks(userid):
 @app.route("/me")
 def me_api():
     user = "amir"
-    kara = database('localhost','akp','somepass', 'akp')
     return {
         "username": kara.host,
         "theme": "",
