@@ -23,7 +23,7 @@ def getUsersChecks(userid):
 @app.route("/me")
 def me_api():
     user = "amir"
-    kara = database('localhost','akp','somepass')
+    kara = database('localhost','akp','somepass', 'akp')
     return {
         "username": kara.host,
         "theme": "",
