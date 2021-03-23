@@ -17,8 +17,18 @@ class database:
     def getChecks(self, userid):
         return ''
 
-    def getUser(self, userid):
-        return ''
+    def getUser(self, user_phone):
+        query = "SELECT * FROM `akp_users` WHERE user_phone = %s LIMIT 1"
+        cursor = self.db.cursor(buffered=True, dictionary=True)
+        cursor.execute(query, (user_phone, ))
+        self.db.commit()
+        user = cursor.fetchone()
+
+        return {
+            'error' : False,
+            'code' : 200,
+            'data' : user
+        }, 200
 
     def addUser(self, user_phone):
         if self.isUserExists(user_phone):
@@ -31,10 +41,12 @@ class database:
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, (user_phone, ))
         cursor.close()
+        
         return {
             'error' : False,
             'code' : 201,
             'message' : 'User created',
+            'data' : self.getUser(user_phone)[0]['data'],
         }, 201
 
     def isUserExists(self, user_phone):

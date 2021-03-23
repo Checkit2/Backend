@@ -40,12 +40,7 @@ def getUsersChecks(userid):
 
 @app.route("/me")
 def me_api():
-    user = "amir"
-    return {
-        "username": kara.host,
-        "theme": "",
-        "image": "",
-    }
+    return kara.getUser("09226742397")
 
 @app.route("/status")
 def status():
