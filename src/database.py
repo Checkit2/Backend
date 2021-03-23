@@ -5,6 +5,7 @@ class database:
     def createTables(self):
         tables = [
             "CREATE TABLE IF NOT EXISTS `akp_users` ( `user_id` INT NOT NULL AUTO_INCREMENT , `user_name` TEXT NULL , `user_phone` TEXT NOT NULL , `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , `updated_at` TIMESTAMP NOT NULL DEFAULT NOW() ON UPDATE now() , PRIMARY KEY (`user_id`)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_persian_ci;",
+            "CREATE TABLE IF NOT EXISTS `akp_checks` ( `check_id` INT NOT NULL AUTO_INCREMENT , `check_name` TEXT NULL , `check_result` TEXT NULL , `check_taken_time` TEXT NULL , `check_user` INT NOT NULL , `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , `updated_at` TIMESTAMP NOT NULL DEFAULT NOW() ON UPDATE now() , PRIMARY KEY (`check_id`)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_persian_ci;",
         ]
         for table in tables:
             cursor = self.db.cursor(buffered=True)
@@ -14,8 +15,57 @@ class database:
             return True
         return False
 
-    def getChecks(self, userid):
+    def getChecks(self, user_phone):
+        userid = self.getUserIdByPhone(user_phone)
+        query = "SELECT * FROM `akp_checks` WHERE check_user = %s"
+        cursor = self.db.cursor(buffered=True, dictionary=True)
+        cursor.execute(query, (userid, ))
+        self.db.commit()
+        return {
+            'error' : False,
+            'code' : 200,
+            'data' : cursor.fetchall()
+        }
         return ''
+
+    def getCheck(self, user_phone, checkid):
+        if self.isCheckExists(checkid) is not True:
+            return {
+                'error' : False,
+                'code' : 404,
+                'message' : 'No check founed with this id'
+            }, 404
+        
+        userid = self.getUserIdByPhone(user_phone)
+        query = "SELECT * FROM `akp_checks` WHERE check_user = %s AND check_id = %s"
+        cursor = self.db.cursor(buffered=True, dictionary=True)
+        cursor.execute(query, (userid, checkid))
+        self.db.commit()
+        return {
+            'error' : False,
+            'code' : 200,
+            'data' : cursor.fetchone()
+        }
+
+    def isCheckExists(self, checkid):
+        query = "SELECT * FROM `akp_checks` WHERE check_id = %s LIMIT 1"
+        values = (checkid,)
+        cursor = self.db.cursor(buffered=True)
+        cursor.execute(query, values)
+        self.db.commit()
+        print(cursor.rowcount)
+        if cursor.rowcount > 0:
+            cursor.close()
+            return True
+        cursor.close()
+        return False
+
+    def getUserIdByPhone(self, user_phone):
+        query = "SELECT user_id FROM `akp_users` WHERE user_phone = %s LIMIT 1"
+        cursor = self.db.cursor(buffered=True, dictionary=True)
+        cursor.execute(query, (user_phone, ))
+        self.db.commit()
+        return cursor.fetchone()['user_id']
 
     def getUser(self, user_phone):
         query = "SELECT * FROM `akp_users` WHERE user_phone = %s LIMIT 1"

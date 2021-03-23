@@ -40,7 +40,7 @@ def getUsersChecks(userid):
 
 @app.route("/me")
 def me_api():
-    return kara.getUser("09226742397")
+    return kara.getChecks("09226742397")
 
 @app.route("/status")
 def status():
