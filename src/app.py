@@ -15,7 +15,6 @@ def showResult():
 
 @app.route('/register', methods=['GET', 'POST'])
 def registerUser():
-    # kara.addUser()
     req = request.json
     if req == None:
         return {
@@ -59,3 +58,28 @@ def status():
         'python_version' : '3.8.5',
         'flask_version' : '1.1.2'
     }
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return {
+        'error' : False,
+        'code' : 404,
+        'message' : f"The requested URL path {request.path} was not founded on the server."
+    },404
+
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    return {
+        'error' : False,
+        'code' : 404,
+        'message' : f"The requested method '{request.method}' is not allowed."
+    }, 405
+
+@app.errorhandler(403)
+def access_denied():
+    return {
+        'error' : False,
+        'code' : 403,
+        'message' : f"Access denied."
+    }, 403
