@@ -20,8 +20,22 @@ class database:
     def getUser(self, userid):
         return ''
 
-    def addUser(self, userid):
-        return ''
+    def addUser(self, user_phone):
+        if self.isUserExists(user_phone):
+            return {
+                'error' : False,
+                'code' : 200,
+                'message' : 'User already exists',
+            }, 200
+        query = "INSERT INTO `akp_users` (user_phone) VALUES (%s)"
+        cursor = self.db.cursor(buffered=True)
+        cursor.execute(query, (user_phone, ))
+        cursor.close()
+        return {
+            'error' : False,
+            'code' : 201,
+            'message' : 'User created',
+        }, 201
 
     def isUserExists(self, user_phone):
         query = "SELECT * FROM `akp_users` WHERE user_phone = %s LIMIT 1"

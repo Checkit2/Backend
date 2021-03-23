@@ -1,4 +1,4 @@
-from flask import Flask, escape, request
+from flask import Flask, escape, request, jsonify
 from database import database
 
 app = Flask(__name__)
@@ -13,11 +13,27 @@ def hello():
 def showResult():
     return f'Result'
 
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def registerUser():
-    if kara.isUserExists('09226742397'):
-        return f'exists'
-    return f'Added'
+    # kara.addUser()
+    req = request.json
+    if req == None:
+        return {
+            'error' : True,
+            'code' : 400,
+            'message' : 'Some variables not passed',
+        }, 400
+    try:
+        return kara.addUser(req['phone'])
+    except KeyError:
+        return {
+        'error' : True,
+        'code' : 400,
+        'message' : 'Some variables not passed',
+    }, 400
+    return {
+        'w' : 'what is happening'
+    },200
 
 @app.route('/checks/<userid>')
 def getUsersChecks(userid):
