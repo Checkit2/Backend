@@ -5,7 +5,7 @@ class database:
     def createTables(self):
         tables = [
             "CREATE TABLE IF NOT EXISTS `akp_users` ( `user_id` INT NOT NULL AUTO_INCREMENT , `user_name` TEXT NULL , `user_phone` TEXT NOT NULL , `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , `updated_at` TIMESTAMP NOT NULL DEFAULT NOW() ON UPDATE now() , PRIMARY KEY (`user_id`)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_persian_ci;",
-            "CREATE TABLE IF NOT EXISTS `akp_checks` ( `check_id` INT NOT NULL AUTO_INCREMENT , `check_name` TEXT NULL , `check_result` TEXT NULL , `check_taken_time` TEXT NULL , `check_user` INT NOT NULL , `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , `updated_at` TIMESTAMP NOT NULL DEFAULT NOW() ON UPDATE now() , PRIMARY KEY (`check_id`)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_persian_ci;",
+            "CREATE TABLE IF NOT EXISTS `akp_checks` ( `check_id` INT NOT NULL AUTO_INCREMENT , `check_name` TEXT NULL , `check_status` TEXT NULL, `check_result` TEXT NULL , `check_taken_time` TEXT NULL , `check_user` INT NOT NULL , `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , `updated_at` TIMESTAMP NOT NULL DEFAULT NOW() ON UPDATE now() , PRIMARY KEY (`check_id`)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_persian_ci;",
         ]
         for table in tables:
             cursor = self.db.cursor(buffered=True)
@@ -47,13 +47,33 @@ class database:
             'data' : cursor.fetchone()
         }
 
+    def addCheck(self, check_user, check_name = None):
+        query = "INSERT INTO `akp_checks` (check_user, check_name, check_status) VALUES (%s, %s, %s)"
+        cursor = self.db.cursor(buffered=True)
+        check_status = 'Pending'
+        # Send for proccess
+        if check_name is None:
+            import random
+            check_name = "Check #" + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9)))
+        cursor.execute(query, (check_user, check_name, check_status))
+        self.db.commit()
+        cursor.close()
+        return {
+            'error' : False,
+            'code' : 201,
+            'message' : 'check created'
+        }, 201
+
+    def updateCheckResult(self, checkid, check_result, check_taken_time = None, check_status = None):
+        pass
+
     def isCheckExists(self, checkid):
         query = "SELECT * FROM `akp_checks` WHERE check_id = %s LIMIT 1"
         values = (checkid,)
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, values)
         self.db.commit()
-        print(cursor.rowcount)
+        
         if cursor.rowcount > 0:
             cursor.close()
             return True
