@@ -28,7 +28,7 @@ class database:
         }
         return ''
 
-    def getCheck(self, user_phone, checkid):
+    def getCheck(self, checkid):
         if self.isCheckExists(checkid) is not True:
             return {
                 'error' : False,
@@ -36,10 +36,9 @@ class database:
                 'message' : 'No check founed with this id'
             }, 404
         
-        userid = self.getUserIdByPhone(user_phone)
-        query = "SELECT * FROM `akp_checks` WHERE check_user = %s AND check_id = %s"
+        query = "SELECT * FROM `akp_checks` WHERE check_id = %s"
         cursor = self.db.cursor(buffered=True, dictionary=True)
-        cursor.execute(query, (userid, checkid))
+        cursor.execute(query, (checkid, ))
         self.db.commit()
         return {
             'error' : False,
@@ -65,15 +64,43 @@ class database:
         }, 201
 
     def updateCheckResult(self, checkid, check_result, check_taken_time = None, check_status = None):
-        pass
+        if self.isCheckExists(checkid) is False:
+            return {
+                'error' : False,
+                'code' : 404,
+                'message' : "No check founed with this id"
+            }, 404
+        
+        query = "UPDATE `akp_checks` SET `check_result` = %s , `check_taken_time` = %s , `check_status` = %s WHERE check_id = %s"
+        if check_status is None:
+            old_check_status = self.getCheckStatus(checkid)
+            if old_check_status is not False:
+                check_status = old_check_status
+        cursor = self.db.cursor(buffered=True)
+        cursor.execute(query, (check_result, check_taken_time, check_status, checkid))
+        self.db.commit()
+        return {
+            'error' : False,
+            'code' : 200,
+            'message' : 'Check updated',
+            'data' : self.getCheck(checkid)
+        }
+
+    def getCheckStatus(self, checkid):
+        query = "SELECT check_status FROM `akp_checks` WHERE check_id = %s LIMIT 1"
+        cursor = self.db.cursor(buffered=True, dictionary=True)
+        cursor.execute(query, (checkid, ))
+        res = cursor.fetchone()
+        if res is None:
+            return False
+        return res['check_status']
 
     def isCheckExists(self, checkid):
         query = "SELECT * FROM `akp_checks` WHERE check_id = %s LIMIT 1"
         values = (checkid,)
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, values)
-        self.db.commit()
-        
+
         if cursor.rowcount > 0:
             cursor.close()
             return True
@@ -125,7 +152,7 @@ class database:
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, values)
         self.db.commit()
-        print(cursor.rowcount)
+        
         if cursor.rowcount > 0:
             cursor.close()
             return True
