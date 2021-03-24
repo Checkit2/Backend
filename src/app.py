@@ -54,6 +54,16 @@ def status():
         'flask_version' : '1.1.2'
     }
 
+@app.route('/job')
+def createJob():
+    import taskManager
+    nt = taskManager()
+    nt.newTask()
+    return {
+        'status' : 'okay'
+    }
+    pass
+
 @app.errorhandler(404)
 def page_not_found(e):
     return {
