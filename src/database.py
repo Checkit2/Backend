@@ -133,6 +133,7 @@ class database:
                 'error' : False,
                 'code' : 200,
                 'message' : 'User already exists',
+                'data' : self.getUser(user_phone)[0]['data'],
             }, 200
         query = "INSERT INTO `akp_users` (user_phone) VALUES (%s)"
         cursor = self.db.cursor(buffered=True)
