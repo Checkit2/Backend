@@ -47,6 +47,17 @@ def registerUser():
 def getUsersChecks(userid):
     return kara.getUsersChecks(userid)
 
+@app.route('/check/update/<check_id>', methods=['PUT'])
+def modifyCheckResult(check_id):
+    req = request.json
+    if req == None:
+        return {
+            'error' : True,
+            'code' : 400,
+            'message' : 'Some variables not passed',
+        }, 400
+    return kara.modifyCheckResult(check_id, req['keys'], req['values'])
+
 @app.route('/check/<check_id>', methods=['GET'])
 def getSingleCheck(check_id):
     return kara.getCheck(check_id)

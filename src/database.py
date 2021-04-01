@@ -128,6 +128,31 @@ class database:
             'data' : data
         }
 
+    def modifyCheckResult(self, check_id, keys, values):
+        check_result = {
+            "keys" : keys,
+            "values" : values,
+            "analysis" : ""
+        }
+        import json
+        check_result = json.dumps(check_result)
+        
+        self.updateCheckResult(check_id, check_result, check_status= "Modified")
+        self.updateAnalysis(check_id, self.oc.analysis(keys, values))
+        return {
+            'error' : False,
+            'code' : 200,
+            'message' : 'Result modified',
+            'data' : self.getCheck(check_id)
+        }
+
+    def updateAnalysis(self, check_id, result):
+        check = self.getCheck(check_id)
+        import json
+        check["data"]["check_result"]["analysis"] = result
+        check["data"]["check_result"] = json.dumps(check["data"]["check_result"])
+        self.updateCheckResult(check_id, check["data"]["check_result"], check_status="Done")
+
     def updateCheckResult(self, checkid, check_result, check_taken_time = None, check_status = None):
         if self.isCheckExists(checkid) is False:
             return {
