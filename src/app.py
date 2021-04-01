@@ -47,7 +47,7 @@ def addCheck():
             'code' : 400,
             'message' : 'Some variables not passed'
         }, 400
-    return kara.addCheck(req['user'], req['check_name'])
+    return kara.addCheck(req['user'], req['image_url'], req['check_name'])
 
 @app.route('/checks/<check_id>', methods=['PUT'])
 def updateCheck(check_id):

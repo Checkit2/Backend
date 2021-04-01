@@ -46,15 +46,21 @@ class database:
             'data' : cursor.fetchone()
         }
 
-    def addCheck(self, check_user, check_name = None):
-        query = "INSERT INTO `akp_checks` (check_user, check_name, check_status) VALUES (%s, %s, %s)"
+    def addCheck(self, check_user, check_image_url, check_name = None):
+        if check_image_url == None:
+            return {
+                'error' : True,
+                'code' : 400,
+                'message' : 'unvalid image url'
+            }, 400
+        query = "INSERT INTO `akp_checks` (check_user, check_name, check_status, check_image_url) VALUES (%s, %s, %s, %s)"
         cursor = self.db.cursor(buffered=True)
         check_status = 'Pending'
         # Send for proccess
         if check_name is None:
             import random
             check_name = "Check #" + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9)))
-        cursor.execute(query, (check_user, check_name, check_status))
+        cursor.execute(query, (check_user, check_name, check_status, check_image_url))
         self.db.commit()
         cursor.close()
         return {
