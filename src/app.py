@@ -47,7 +47,7 @@ def registerUser():
 def getUsersChecks(userid):
     return kara.getUsersChecks(userid)
 
-@app.route('/user/check/<check_id>', methods=['GET'])
+@app.route('/check/<check_id>', methods=['GET'])
 def getSingleCheck(check_id):
     return kara.getCheck(check_id)
 
