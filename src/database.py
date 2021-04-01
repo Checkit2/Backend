@@ -63,6 +63,15 @@ class database:
             'message' : 'check created'
         }, 201
 
+    def getUsersChecks(self, userid):
+        query = "SELECT * FROM `akp_checks` WHERE check_user = %s"
+        cursor = self.db.cursor(buffered=True, dictionary=True)
+        cursor.execute(query, (userid, ))
+        return {
+            'error' : False,
+            'data' : cursor.fetchall()
+        }
+
     def updateCheckResult(self, checkid, check_result, check_taken_time = None, check_status = None):
         if self.isCheckExists(checkid) is False:
             return {

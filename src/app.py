@@ -34,9 +34,20 @@ def registerUser():
         'w' : 'what is happening'
     },200
 
-@app.route('/checks/<userid>')
+@app.route('/checks/<userid>', methods=['GET'])
 def getUsersChecks(userid):
-    return '{}\'s profile'.format(escape(userid))
+    return kara.getUsersChecks(userid)
+
+@app.route('/checks/new', methods=['POST'])
+def addCheck():
+    req = request.json
+    if req == None:
+        return {
+            'error' : True,
+            'code' : 400,
+            'message' : 'Some variables not passed'
+        }, 400
+    return kara.addCheck(req['user'], req['check_name'])
 
 @app.route("/me")
 def me_api():
