@@ -49,27 +49,39 @@ class database:
         }
 
     def addCheck(self, check_user, check_image_url, check_name = None):
+        import time
+        start_time = time.time()
+        
+        keys, values = self.oc.process(image_url = check_image_url)
+        
+        data = {
+            "keys" : keys,
+            "values" : values
+        }
+        import json
+        check_result = json.dumps(data)
+
         if check_image_url == None:
             return {
                 'error' : True,
                 'code' : 400,
                 'message' : 'unvalid image url'
             }, 400
-        query = "INSERT INTO `akp_checks` (check_user, check_name, check_status, check_image_url) VALUES (%s, %s, %s, %s)"
+        query = "INSERT INTO `akp_checks` (check_user, check_name, check_status, check_image_url, check_result, check_taken_time) VALUES (%s, %s, %s, %s, %s, %s)"
         cursor = self.db.cursor(buffered=True)
-        check_status = 'Pending'
-        # Send for proccess
+        check_status = 'waiting'
+        
         if check_name is None:
             import random
             check_name = "Check #" + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9)))
-        cursor.execute(query, (check_user, check_name, check_status, check_image_url))
+        cursor.execute(query, (check_user, check_name, check_status, check_image_url, check_result, (time.time() - start_time)))
         self.db.commit()
         cursor.close()
         return {
             'error' : False,
             'code' : 201,
             'message' : 'check created',
-            'data' : self.oc.process(image_url = check_image_url)
+            'data' : data
         }, 201
 
     def addFile(self, file_url, userid):
