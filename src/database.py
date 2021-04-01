@@ -95,6 +95,24 @@ class database:
             'data' : self.getCheck(checkid)
         }
 
+    def updateCheck(self, checkid, checkname):
+        if self.isCheckExists(checkid) is False:
+            return {
+                'error' : False,
+                'code' : 404,
+                'message' : "No check founed with this id"
+            }, 404
+        query = "UPDATE `akp_checks` SET `check_name` = %s WHERE `check_id` = %s"
+        cursor = self.db.cursor(buffered=True)
+        cursor.execute(query, (checkname, checkid))
+        self.db.commit()
+        return {
+            'error' : False,
+            'code' : 200,
+            'message' : 'check updated',
+            'data' : self.getCheck(checkid)
+        }
+
     def getCheckStatus(self, checkid):
         query = "SELECT check_status FROM `akp_checks` WHERE check_id = %s LIMIT 1"
         cursor = self.db.cursor(buffered=True, dictionary=True)

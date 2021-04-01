@@ -49,6 +49,17 @@ def addCheck():
         }, 400
     return kara.addCheck(req['user'], req['check_name'])
 
+@app.route('/checks/<check_id>', methods=['PUT'])
+def updateCheck(check_id):
+    req = request.json
+    if req == None:
+        return {
+            'error' : True,
+            'code' : 400,
+            'message' : 'Some variables not passed'
+        }, 400
+    return kara.updateCheck(check_id, req['name'])
+
 @app.route("/me")
 def me_api():
     return kara.updateCheckResult(2, 'res', 200, 'Done')
