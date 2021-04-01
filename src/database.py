@@ -1,5 +1,6 @@
 import mysql.connector
 import redis
+from OpenCV.OpenCv import OpenCv
 
 class database:
     def createTables(self):
@@ -67,7 +68,8 @@ class database:
         return {
             'error' : False,
             'code' : 201,
-            'message' : 'check created'
+            'message' : 'check created',
+            'data' : self.oc.process(image_url = check_image_url)
         }, 201
 
     def addFile(self, file_url, userid):
@@ -232,6 +234,7 @@ class database:
         self.username = username
         self.password = password
         self.dbname = dbname
+        self.oc = OpenCv()
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.db = mysql.connector.connect(
             host = self.host,
