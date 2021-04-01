@@ -150,9 +150,21 @@ def updateCheck(check_id):
         }, 400
     return kara.updateCheck(check_id, req['name'])
 
+@app.route('/checks/result/<check_id>', methods=['PUT'])
+def updateCheckResult(check_id):
+    req = request.json
+    if req == None:
+        return {
+            'error' : True,
+            'code' : 400,
+            'message' : 'Some variables not passed'
+        }, 400
+    return kara.updateCheckResult(check_id, req['result'], req['taken_time'], req['status'])
+
 @app.route("/me")
 def me_api():
-    return kara.updateCheckResult(2, 'res', 200, 'Done')
+    # return kara.updateCheckResult(2, 'res', 200, 'Done')
+    return f'You'
 
 @app.route("/status")
 def status():
@@ -165,16 +177,6 @@ def status():
         'python_version' : '3.8.5',
         'flask_version' : '1.1.2'
     }
-
-@app.route('/job')
-def createJob():
-    import taskManager
-    nt = taskManager()
-    nt.newTask()
-    return {
-        'status' : 'okay'
-    }
-    pass
 
 @app.errorhandler(404)
 def page_not_found(e):
