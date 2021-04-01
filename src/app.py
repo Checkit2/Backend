@@ -1,7 +1,16 @@
-from flask import Flask, escape, request, jsonify
+import os
+from flask import Flask, escape, request, jsonify, flash, redirect, url_for
 from database import database
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = os.path.join('static', 'images')
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
+PUBLIC_APP_URL = "http://localhost:5000/" + os.path.join('static', 'images')
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['PUBLIC_APP_URL'] = PUBLIC_APP_URL
+
 kara = database('localhost','akp','somepass', 'akp')
 
 @app.route('/')
@@ -48,6 +57,83 @@ def addCheck():
             'message' : 'Some variables not passed'
         }, 400
     return kara.addCheck(req['user'], req['image_url'], req['check_name'])
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def hash_file(file_path):
+    import sys
+    import hashlib
+
+    # BUF_SIZE is totally arbitrary, change for your app!
+    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+
+    sha1 = hashlib.sha1()
+
+    with open(file_path, 'rb') as f:
+        while True:
+            data = f.read(BUF_SIZE)
+            if not data:
+                break
+            sha1.update(data)
+
+    return sha1.hexdigest()
+
+
+@app.route('/upload/<user_id>', methods=['GET', 'POST'])
+def upload(user_id):
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            return {
+                'error' : True,
+                'message' : 'no file founded in request',
+                'code' : 400
+            }, 400
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            return {
+                'error' : True,
+                'message' : 'no file founded in request',
+                'code' : 400
+            }, 400
+        if file and allowed_file(file.filename):
+            if not kara.isUserExistsById(user_id):
+                return {
+                    'error' : True,
+                    'code': 404,
+                    'message' : 'no user founded with this id'
+                }, 404
+            filename = secure_filename("u-" + user_id + "-" + file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            kara.addFile(os.path.join(app.config['PUBLIC_APP_URL'], filename), user_id)
+            return {
+                'error' : False,
+                'code' : 200,
+                'message' : 'File uploaded',
+                'data' :  os.path.join(app.config['PUBLIC_APP_URL'], filename)
+            }
+        if not allowed_file(file.filename):
+            return {
+                'error' : True,
+                'code' : 403,
+                'message' : 'This type of file not supported, Supported types [jpg,png,jpeg]'
+            }
+        return {
+            'error' : False,
+            'code' : 200
+        }
+
+@app.route('/upload', methods=['GET', 'POST'])
+def rupload():
+    return {
+        'error' : True,
+        'code' : 400,
+        'message' : 'enter user id in url request'
+    }
 
 @app.route('/checks/<check_id>', methods=['PUT'])
 def updateCheck(check_id):

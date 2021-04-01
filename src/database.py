@@ -6,6 +6,7 @@ class database:
         tables = [
             "CREATE TABLE IF NOT EXISTS `akp_users` ( `user_id` INT NOT NULL AUTO_INCREMENT , `user_name` TEXT NULL , `user_phone` TEXT NOT NULL , `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , `updated_at` TIMESTAMP NOT NULL DEFAULT NOW() ON UPDATE now() , PRIMARY KEY (`user_id`)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_persian_ci;",
             "CREATE TABLE IF NOT EXISTS `akp_checks` ( `check_id` INT NOT NULL AUTO_INCREMENT , `check_name` TEXT NULL , `check_image_url` TEXT NULL , `check_status` TEXT NULL, `check_result` TEXT NULL , `check_taken_time` TEXT NULL , `check_user` INT NOT NULL , `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , `updated_at` TIMESTAMP NOT NULL DEFAULT NOW() ON UPDATE now() , PRIMARY KEY (`check_id`)) ENGINE = InnoDB CHARSET=utf8 COLLATE utf8_persian_ci;",
+            "CREATE TABLE IF NOT EXISTS `akp_attachments` ( `attach_id` INT NOT NULL AUTO_INCREMENT , `user_id` INT NOT NULL , `attach_url` TEXT NOT NULL , `uploaded_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , PRIMARY KEY (`attach_id`)) ENGINE = InnoDB;",
         ]
         for table in tables:
             cursor = self.db.cursor(buffered=True)
@@ -69,10 +70,31 @@ class database:
             'message' : 'check created'
         }, 201
 
+    def addFile(self, file_url, userid):
+        if not self.isFileExists(file_url):
+            query = "INSERT INTO `akp_attachments` (user_id, attach_url) VALUES (%s, %s)"
+            cursor = self.db.cursor(buffered=True)
+            cursor.execute(query, (userid, file_url))
+            self.db.commit()
+            cursor.close()
+
+    def isFileExists(self, file_url):
+        query = "SELECT * FROM `akp_attachments` WHERE attach_url = %s LIMIT 1"
+        values = (file_url,)
+        cursor = self.db.cursor(buffered=True)
+        cursor.execute(query, values)
+
+        if cursor.rowcount > 0:
+            cursor.close()
+            return True
+        cursor.close()
+        return False
+
     def getUsersChecks(self, userid):
         query = "SELECT * FROM `akp_checks` WHERE check_user = %s"
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (userid, ))
+        cursor.close()
         return {
             'error' : False,
             'data' : cursor.fetchall()
@@ -146,6 +168,18 @@ class database:
         cursor.execute(query, (user_phone, ))
         self.db.commit()
         return cursor.fetchone()['user_id']
+
+    def isUserExistsById(self, userid):
+        query = "SELECT * FROM `akp_users` WHERE user_id = %s LIMIT 1"
+        values = (userid,)
+        cursor = self.db.cursor(buffered=True)
+        cursor.execute(query, values)
+
+        if cursor.rowcount > 0:
+            cursor.close()
+            return True
+        cursor.close()
+        return False
 
     def getUser(self, user_phone):
         query = "SELECT * FROM `akp_users` WHERE user_phone = %s LIMIT 1"
