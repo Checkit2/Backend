@@ -23,10 +23,14 @@ class database:
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (userid, ))
         self.db.commit()
+        data = cursor.fetchall()
+        for i,d in enumerate(data):
+            d["check_result"] = json.loads(d["check_result"])
+            data[i] = d
         return {
             'error' : False,
             'code' : 200,
-            'data' : cursor.fetchall()
+            'data' : data
         }
         return ''
 
@@ -42,10 +46,14 @@ class database:
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (checkid, ))
         self.db.commit()
+        data = cursor.fetchone()
+        import json
+        data["check_result"] = json.loads(data["check_result"])
+        
         return {
             'error' : False,
             'code' : 200,
-            'data' : cursor.fetchone()
+            'data' : data
         }
 
     def addCheck(self, check_user, check_image_url, check_name = None):
@@ -56,7 +64,8 @@ class database:
         
         data = {
             "keys" : keys,
-            "values" : values
+            "values" : values,
+            "analysis" : ""
         }
         import json
         check_result = json.dumps(data)
@@ -70,7 +79,7 @@ class database:
         query = "INSERT INTO `akp_checks` (check_user, check_name, check_status, check_image_url, check_result, check_taken_time) VALUES (%s, %s, %s, %s, %s, %s)"
         cursor = self.db.cursor(buffered=True)
         check_status = 'waiting'
-        
+
         if check_name is None:
             import random
             check_name = "Check #" + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9))) + (str(random.randint(0,9)))
@@ -81,7 +90,7 @@ class database:
             'error' : False,
             'code' : 201,
             'message' : 'check created',
-            'data' : data
+            'data' : data,
         }, 201
 
     def addFile(self, file_url, userid):
@@ -109,9 +118,14 @@ class database:
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (userid, ))
         cursor.close()
+        data = cursor.fetchall()
+        import json
+        for i,d in enumerate(data):
+            d["check_result"] = json.loads(d["check_result"])
+            data[i] = d
         return {
             'error' : False,
-            'data' : cursor.fetchall()
+            'data' : data
         }
 
     def updateCheckResult(self, checkid, check_result, check_taken_time = None, check_status = None):
