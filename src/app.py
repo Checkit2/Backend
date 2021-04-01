@@ -213,3 +213,6 @@ def access_denied():
         'code' : 403,
         'message' : f"Access denied."
     }, 403
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
