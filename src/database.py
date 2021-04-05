@@ -63,6 +63,7 @@ class database:
         keys, values = self.oc.process(image_url = check_image_url)
         
         data = {
+            "check_id" : self.getLatestCheck(),
             "keys" : keys,
             "values" : values,
             "analysis" : ""
@@ -92,6 +93,13 @@ class database:
             'message' : 'check created',
             'data' : data,
         }, 201
+
+    def getLatestCheck(self):
+        cursor = self.db.cursor(buffered=True)
+        cursor.execute("SELECT check_id FROM `akp_checks` ORDER BY check_id DESC LIMIT 1", ())
+        if cursor.rowcount > 0:
+            return cursor.fetchone()[0]
+        return False
 
     def addFile(self, file_url, userid):
         if not self.isFileExists(file_url):
