@@ -19,7 +19,7 @@ class database:
 
     def getChecks(self, user_phone):
         userid = self.getUserIdByPhone(user_phone)
-        query = "SELECT * FROM `akp_checks` WHERE check_user = %s"
+        query = "SELECT * FROM `akp_checks` WHERE check_user = %s ORDER BY check_id DESC"
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (userid, ))
         self.db.commit()
@@ -63,7 +63,6 @@ class database:
         keys, values = self.oc.process(image_url = check_image_url)
         
         data = {
-            "check_id" : self.getLatestCheck(),
             "keys" : keys,
             "values" : values,
             "analysis" : ""
@@ -90,6 +89,7 @@ class database:
         return {
             'error' : False,
             'code' : 201,
+            'check_id' : self.getLatestCheck(),
             'message' : 'check created',
             'data' : data,
         }, 201
@@ -122,7 +122,7 @@ class database:
         return False
 
     def getUsersChecks(self, userid):
-        query = "SELECT * FROM `akp_checks` WHERE check_user = %s"
+        query = "SELECT * FROM `akp_checks` WHERE check_user = %s ORDER BY check_id DESC"
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (userid, ))
         cursor.close()
