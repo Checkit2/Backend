@@ -282,6 +282,7 @@ class database:
         self.reconnect()
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, (user_phone, ))
+        self.db.commit()
         cursor.close()
         
         return {
