@@ -10,6 +10,7 @@ class database:
             "CREATE TABLE IF NOT EXISTS `akp_attachments` ( `attach_id` INT NOT NULL AUTO_INCREMENT , `user_id` INT NOT NULL , `attach_url` TEXT NOT NULL , `uploaded_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , PRIMARY KEY (`attach_id`)) ENGINE = InnoDB;",
         ]
         for table in tables:
+            self.reconnect()
             cursor = self.db.cursor(buffered=True)
             cursor.execute(table)
         cursor.close()
@@ -20,6 +21,7 @@ class database:
     def getChecks(self, user_phone):
         userid = self.getUserIdByPhone(user_phone)
         query = "SELECT * FROM `akp_checks` WHERE check_user = %s ORDER BY check_id DESC"
+        self.reconnect()
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (userid, ))
         self.db.commit()
@@ -43,6 +45,7 @@ class database:
             }, 404
         
         query = "SELECT * FROM `akp_checks` WHERE check_id = %s"
+        self.reconnect()
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (checkid, ))
         self.db.commit()
@@ -77,6 +80,7 @@ class database:
                 'message' : 'unvalid image url'
             }, 400
         query = "INSERT INTO `akp_checks` (check_user, check_name, check_status, check_image_url, check_result, check_taken_time) VALUES (%s, %s, %s, %s, %s, %s)"
+        self.reconnect()
         cursor = self.db.cursor(buffered=True)
         check_status = 'waiting'
 
@@ -95,6 +99,7 @@ class database:
         }, 201
 
     def getLatestCheck(self):
+        self.reconnect()
         cursor = self.db.cursor(buffered=True)
         cursor.execute("SELECT check_id FROM `akp_checks` ORDER BY check_id DESC LIMIT 1", ())
         if cursor.rowcount > 0:
@@ -104,6 +109,7 @@ class database:
     def addFile(self, file_url, userid):
         if not self.isFileExists(file_url):
             query = "INSERT INTO `akp_attachments` (user_id, attach_url) VALUES (%s, %s)"
+            self.reconnect()
             cursor = self.db.cursor(buffered=True)
             cursor.execute(query, (userid, file_url))
             self.db.commit()
@@ -112,6 +118,7 @@ class database:
     def isFileExists(self, file_url):
         query = "SELECT * FROM `akp_attachments` WHERE attach_url = %s LIMIT 1"
         values = (file_url,)
+        self.reconnect()
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, values)
 
@@ -123,6 +130,7 @@ class database:
 
     def getUsersChecks(self, userid):
         query = "SELECT * FROM `akp_checks` WHERE check_user = %s ORDER BY check_id DESC"
+        self.reconnect()
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (userid, ))
         cursor.close()
@@ -174,6 +182,7 @@ class database:
             old_check_status = self.getCheckStatus(checkid)
             if old_check_status is not False:
                 check_status = old_check_status
+        self.reconnect()
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, (check_result, check_taken_time, check_status, checkid))
         self.db.commit()
@@ -192,6 +201,7 @@ class database:
                 'message' : "No check founed with this id"
             }, 404
         query = "UPDATE `akp_checks` SET `check_name` = %s WHERE `check_id` = %s"
+        self.reconnect()
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, (checkname, checkid))
         self.db.commit()
@@ -204,6 +214,7 @@ class database:
 
     def getCheckStatus(self, checkid):
         query = "SELECT check_status FROM `akp_checks` WHERE check_id = %s LIMIT 1"
+        self.reconnect()
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (checkid, ))
         res = cursor.fetchone()
@@ -214,6 +225,7 @@ class database:
     def isCheckExists(self, checkid):
         query = "SELECT * FROM `akp_checks` WHERE check_id = %s LIMIT 1"
         values = (checkid,)
+        self.reconnect()
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, values)
 
@@ -225,6 +237,7 @@ class database:
 
     def getUserIdByPhone(self, user_phone):
         query = "SELECT user_id FROM `akp_users` WHERE user_phone = %s LIMIT 1"
+        self.reconnect()
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (user_phone, ))
         self.db.commit()
@@ -233,6 +246,7 @@ class database:
     def isUserExistsById(self, userid):
         query = "SELECT * FROM `akp_users` WHERE user_id = %s LIMIT 1"
         values = (userid,)
+        self.reconnect()
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, values)
 
@@ -244,6 +258,7 @@ class database:
 
     def getUser(self, user_phone):
         query = "SELECT * FROM `akp_users` WHERE user_phone = %s LIMIT 1"
+        self.reconnect()
         cursor = self.db.cursor(buffered=True, dictionary=True)
         cursor.execute(query, (user_phone, ))
         self.db.commit()
@@ -264,6 +279,7 @@ class database:
                 'data' : self.getUser(user_phone)[0]['data'],
             }, 200
         query = "INSERT INTO `akp_users` (user_phone) VALUES (%s)"
+        self.reconnect()
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, (user_phone, ))
         cursor.close()
@@ -278,6 +294,7 @@ class database:
     def isUserExists(self, user_phone):
         query = "SELECT * FROM `akp_users` WHERE user_phone = %s LIMIT 1"
         values = (user_phone,)
+        self.reconnect()
         cursor = self.db.cursor(buffered=True)
         cursor.execute(query, values)
         self.db.commit()
@@ -288,6 +305,9 @@ class database:
         cursor.close()
         return False
     
+    def reconnect(self):
+        self.db.reconnect()
+
     def __init__(self, host, username, password, dbname):
         self.host = host
         self.username = username
